@@ -138,6 +138,17 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+
+        for(int i=0;i<b.size();i++)
+        {
+            for(int j=0;j<b.size();j++)
+            {
+                if(b.tile(i,j)==null)
+                {
+                    return  true;
+                }
+            }
+        }//iterate the Board b tile
         return false;
     }
 
@@ -147,9 +158,19 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        for(int i=0;i<b.size();i++)
+        {
+            for(int j=0;j<b.size();j++)
+            {
+                if(b.tile(i,j)!=null &&b.tile(i,j).value()== MAX_PIECE)
+                {
+                    return  true;
+                }
+            }
+        }//iterate the Board b tile
         return false;
     }
+
 
     /**
      * Returns true if there are any valid moves on the board.
@@ -159,6 +180,37 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        boolean isempty=Model.emptySpaceExists(b);
+        if (isempty==true)
+            return true;
+        boolean adjacentSame= false;
+        for(int i=0;i<b.size();i++)
+        {
+            for(int j=0;j<b.size();j++)
+            {
+                adjacentSame=adjacentValid(b,i,j);
+                if (adjacentSame==true)
+                    return  true;
+            }
+        }
+        return false;
+    }
+    public static boolean adjacentValid(Board b, int i ,int j)
+    {
+        if (i!=b.size()-1 && j!= b.size()-1) //the 1st situation which is the normal
+        {
+            if(b.tile(i,j).value()==b.tile(i+1,j).value()|| b.tile(i,j).value()==b.tile(i,j+1).value()) {
+                return true; //in the West or South direction have the same value
+            }
+        }
+        else if(i!=b.size()-1 && j== b.size()-1)
+        {
+            if(b.tile(i,j).value()==b.tile(i+1,j).value())
+                return true;
+        } else if ( i== b.size()-1 && j!=b.size()-1) {
+           if (b.tile(i,j).value()==b.tile(i,j+1).value())
+               return true;
+        }
         return false;
     }
 
