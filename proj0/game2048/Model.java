@@ -106,6 +106,7 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
@@ -114,11 +115,132 @@ public class Model extends Observable {
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
+        board.setViewingPerspective(side);  //assuming we are handling the board only about direction Side.North
+        int size= board.size();
+        boolean flag=false;
+        for(int c=0;c<size;c++){
+            boolean topchange= false;
+            boolean SecChange=false;
+            for (int r=size-2;r>=0;r--)
+            {
+                // serach the space or same value in col
+                Tile t= board.tile(c,r);
+                if (t==null)
+                    continue;
+                boolean temp[]=ColSearch(t,topchange,SecChange,c,r);
+                topchange=temp[1];
+                SecChange=temp[2];
+                if (temp[0]==true)
+                    flag=true;
+            }
+        }
+        changed=flag;
+
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
+    }
+
+    //helper method to find in the column whether there is sth to merge or move
+    public boolean[] ColSearch(Tile t,boolean topChange,boolean SecChange,int c, int r)
+    {
+
+        int basecol = c;
+        int baserow = r+1;
+        int desrow =0;
+        Tile tr=board.tile(0,0);
+        int bestempty = 0;
+        boolean isEmpty=false;
+        boolean isSameval=false;
+        boolean stackChanged = false;
+        for(int i=baserow;i<board.size();i++)
+        {
+            if (board.tile(basecol,i)!=null && t.value()==board.tile(basecol,i).value()) {
+                //tr=board.tile(basecol,i);
+                desrow = i;
+                isSameval = true;
+                break;
+            }
+            else  if (board.tile(basecol,i)!=null)
+                            break;
+        }//find the nearst same tile
+        for (int i=baserow;i<board.size();i++)
+        {
+            if(board.tile(basecol,i)==null) {
+                isEmpty = true;
+                if(i>=bestempty)
+                bestempty= i;
+            }
+        }//find the best position to move
+        //change the board
+        if (isSameval==true && isEmpty==false)
+        {
+
+            if (topChange==true)
+                return new boolean[] {false,topChange,SecChange};
+            board.move(basecol,desrow,t);
+            score+=2*t.value();
+            if (desrow==3)
+                topChange=true;
+            if (desrow==2)
+                SecChange=true;
+            return new boolean[] {true,topChange,SecChange};
+                 }
+        else if(isSameval==false && isEmpty==true)
+        {
+            board.move(c,bestempty,t);
+            return new boolean[] {true,topChange,SecChange}; //nothing about topChange
+
+        }
+        else if (isSameval==true && isEmpty==true)
+        {
+
+            if (topChange==true)
+            {
+                if (SecChange==false)
+                {
+                    if (desrow==3)
+                    {
+                        board.move(c,bestempty,t);
+                        return  new boolean[] {true,topChange,SecChange};
+                    }
+                    board.move(c,desrow,t);
+                    score+=2*t.value();
+                    return new boolean[] {true,topChange,SecChange};
+
+                }
+                else if (SecChange==true) // topChange= true  SecChange = true  if desrow is thesecond row  we should forbid it
+                {
+                    if (bestempty<desrow)
+                    {
+                        board.move(c,bestempty,t);
+                        return new boolean[] {true,topChange,SecChange};
+                    }
+                    else return new boolean[] {false,topChange,SecChange};
+                }
+            } else if (topChange==false) {
+            if (desrow<bestempty) {
+                board.move(c,desrow,t);
+                board.move(c, bestempty, t);
+                score+=2*t.value();
+                if (bestempty==3)
+                    topChange=true;
+                if (bestempty==2)
+                    SecChange=true;
+                return new boolean[] {true,topChange,SecChange};
+            }
+            board.move(c,desrow,t);
+                score+=2*t.value();
+            if (desrow>=2)
+                topChange=true;
+            return new boolean[] {true,topChange,SecChange};
+        }
+        else  return new boolean[] {false,topChange,SecChange};
+        }
+        return new boolean[] {false,topChange,SecChange};
     }
 
     /** Checks if the game is over and sets the gameOver variable

@@ -16,6 +16,7 @@ public enum Side {
      *          square on the reoriented board, then (c+DCOL, r+DROW)
      *          are the standard coordinates of the squares immediately
      *          above it on the reoriented board.
+     *
      *  The idea behind going to this trouble is that by using the
      *  col() and row() methods below to translate from reoriented to
      *  standard coordinates, one can arrange to use exactly the same code
